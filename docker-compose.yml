@@ -1,0 +1,67 @@
+version: '3.8'
+
+services:
+  # Redis Master
+  redis-master:
+    image: redis:7-alpine
+    container_name: redis-master
+    ports:
+      - "6379:6379"
+    command: redis-server --appendonly yes --replica-read-only no
+    volumes:
+      - redis_master_data:/data
+    networks:
+      - redis-network
+
+  # Redis Slave 1
+  redis-slave1:
+    image: redis:7-alpine
+    container_name: redis-slave1
+    ports:
+      - "6380:6379"
+    command: redis-server --slaveof redis-master 6379 --appendonly yes
+    depends_on:
+      - redis-master
+    volumes:
+      - redis_slave1_data:/data
+    networks:
+      - redis-network
+
+  # Redis Slave 2
+  redis-slave2:
+    image: redis:7-alpine
+    container_name: redis-slave2
+    ports:
+      - "6381:6379"
+    command: redis-server --slaveof redis-master 6379 --appendonly yes
+    depends_on:
+      - redis-master
+    volumes:
+      - redis_slave2_data:/data
+    networks:
+      - redis-network
+
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15-alpine
+    container_name: postgres-ecommerce
+    ports:
+      - "5433:5432"
+    environment:
+      POSTGRES_DB: ecommerce
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 123456
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - redis-network
+
+volumes:
+  redis_master_data:
+  redis_slave1_data:
+  redis_slave2_data:
+  postgres_data:
+
+networks:
+  redis-network:
+    driver: bridge
