@@ -34,7 +34,7 @@ Sistema de carrito de compras que integra Redis como sistema de caché y Postgre
 
 ## Estructura del Proyecto
 
-text
+```
 ecommerce_todo/
 ├── app/
 │   ├── cart.py
@@ -51,3 +51,5 @@ ecommerce_todo/
 ├── docker-compose.yml
 ├── requirements.txt
 └── run.py
+```
+
