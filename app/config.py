@@ -19,5 +19,5 @@ class Config:
     REDIS_SLAVE2_HOST = os.getenv('REDIS_SLAVE2_HOST', 'localhost')
     REDIS_SLAVE2_PORT = int(os.getenv('REDIS_SLAVE2_PORT', '6381'))
     
-    # Cache settings
+    # Cache settings - 30 minutos como requiere el laboratorio
     CACHE_EXPIRATION = 30 * 60  # 30 minutos en segundos

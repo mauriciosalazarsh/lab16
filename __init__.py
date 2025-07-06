@@ -1,4 +1,4 @@
-from flask import Flask
+from flask import Flask, jsonify
 import logging
 import os
 from app.routes.cart_routes import cart_bp
@@ -28,12 +28,12 @@ def create_app():
     # Ruta de salud general
     @app.route('/health')
     def health():
-        return {'status': 'ok', 'service': 'ecommerce-cart'}
+        return jsonify({'status': 'ok', 'service': 'ecommerce-cart'})
     
     # Ruta principal
     @app.route('/')
     def index():
-        return {
+        return jsonify({
             'message': 'Ecommerce Cart API',
             'version': '1.0.0',
             'endpoints': {
@@ -47,6 +47,6 @@ def create_app():
                 'top_products': '/cart/stats/top-products',
                 'cache_stats': '/cart/stats/cache'
             }
-        }
+        })
     
     return app

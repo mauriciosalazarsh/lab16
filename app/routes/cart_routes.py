@@ -2,6 +2,7 @@ from flask import Blueprint, jsonify, request
 from app.services.cart_service import CartService
 import time
 import logging
+from sqlalchemy import text
 
 logger = logging.getLogger(__name__)
 
@@ -161,7 +162,7 @@ def health_check():
     try:
         # Verificar conexión a BD haciendo una consulta simple
         from app.models.database import db
-        db.session.execute('SELECT 1')
+        db.session.execute(text('SELECT 1'))
         
         # Verificar conexión a Redis
         cache_stats = cart_service.get_cache_stats()
@@ -181,3 +182,9 @@ def health_check():
             'error': str(e),
             'timestamp': time.time()
         }), 500
+    
+
+@cart_bp.route('/general-health', methods=['GET'])  
+def general_health():
+    """Health check general"""
+    return jsonify({'status': 'ok', 'service': 'ecommerce-cart'})

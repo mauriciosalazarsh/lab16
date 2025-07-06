@@ -13,7 +13,7 @@ def seed_database():
         
         # Lista de productos realistas para el ecommerce
         products = [
-            {"name": "Laptop Dell XPS 13", "price_range": (800, 1500)},
+            {"name": "Laptop Dell XPS 13", "price_range": (800, 1000)},
             {"name": "Mouse Inalámbrico Logitech", "price_range": (25, 80)},
             {"name": "Teclado Mecánico RGB", "price_range": (60, 200)},
             {"name": "Monitor 27\" 4K", "price_range": (250, 600)},
@@ -22,7 +22,7 @@ def seed_database():
             {"name": "SSD 1TB Samsung", "price_range": (80, 150)},
             {"name": "Memoria RAM 16GB DDR4", "price_range": (60, 120)},
             {"name": "Tarjeta Gráfica RTX 4060", "price_range": (300, 500)},
-            {"name": "Smartphone iPhone 15", "price_range": (700, 1200)},
+            {"name": "Smartphone iPhone 15", "price_range": (700, 1000)},
             {"name": "Tablet iPad Air", "price_range": (400, 800)},
             {"name": "Smartwatch Apple Watch", "price_range": (200, 500)},
             {"name": "Parlante Bluetooth JBL", "price_range": (50, 200)},
@@ -54,29 +54,22 @@ def seed_database():
             {"name": "Cable de Red Cat6 (5m)", "price_range": (10, 25)},
             {"name": "Limpiador de Pantallas", "price_range": (8, 20)}
         ]
-        
+
         # Crear 25 carritos de prueba
         test_carts = []
         
-        for i in range(1, 26):  # 25 carritos
-            user_id = f"user{i:03d}"  # user001, user002, etc.
-            
-            # Cada carrito tendrá entre 3 y 10 items
+        for i in range(1, 26):
+            user_id = f"user{i:03d}"
             num_items = random.randint(3, 10)
-            
-            # Seleccionar productos únicos para este carrito
             selected_products = random.sample(products, num_items)
             
             cart_items = []
             for j, product in enumerate(selected_products):
-                # Generar precio dentro del rango del producto
-                price = round(random.uniform(product["price_range"][0], product["price_range"][1]), 2)
-                
-                # Cantidad entre 1 y 5
+                price = round(random.uniform(*product["price_range"]), 2)
                 quantity = random.randint(1, 5)
                 
                 cart_items.append({
-                    'product_id': (i - 1) * 10 + j + 1,  # IDs únicos
+                    'product_id': (i - 1) * 10 + j + 1,
                     'name': product["name"],
                     'price': price,
                     'quantity': quantity
@@ -87,21 +80,18 @@ def seed_database():
                 'items': cart_items
             })
         
-        # Insertar datos en la base de datos
         total_carts = 0
         total_items = 0
         
         for cart_data in test_carts:
-            # Crear el carrito
             cart = DBCart(
                 user_id=cart_data['user_id'],
                 created_at=datetime.now(timezone.utc),
                 updated_at=datetime.now(timezone.utc)
             )
             db.session.add(cart)
-            db.session.flush()  # Para obtener el ID del carrito
+            db.session.flush()
             
-            # Agregar items al carrito
             for item_data in cart_data['items']:
                 item = DBCartItem(
                     cart_id=cart.id,
@@ -117,19 +107,16 @@ def seed_database():
             
             total_carts += 1
         
-        # Confirmar todos los cambios
         db.session.commit()
         
-        # Mostrar estadísticas
-        print("✅ Datos de prueba insertados correctamente")
-        print(f"📊 Estadísticas:")
-        print(f"   • Carritos creados: {total_carts}")
-        print(f"   • Items totales: {total_items}")
-        print(f"   • Promedio de items por carrito: {total_items/total_carts:.1f}")
+        print("Datos de prueba insertados correctamente")
+        print("Estadísticas:")
+        print(f"   - Carritos creados: {total_carts}")
+        print(f"   - Items totales: {total_items}")
+        print(f"   - Promedio de items por carrito: {total_items/total_carts:.1f}")
         
-        # Mostrar algunos ejemplos
-        print(f"\n📋 Ejemplos de carritos creados:")
-        for i, cart_data in enumerate(test_carts[:3]):  # Mostrar solo los primeros 3
+        print("\nEjemplos de carritos creados:")
+        for i, cart_data in enumerate(test_carts[:3]):
             total_value = sum(item['price'] * item['quantity'] for item in cart_data['items'])
             print(f"   {cart_data['user_id']}: {len(cart_data['items'])} items, Total: ${total_value:.2f}")
         

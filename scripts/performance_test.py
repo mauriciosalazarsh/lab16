@@ -12,7 +12,7 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from app.cache import cache
 
 class PerformanceTest:
-    def __init__(self, base_url="http://localhost:5000"):
+    def __init__(self, base_url="http://localhost:5001"):
         self.base_url = base_url
         self.results = {
             'cache_enabled': {
@@ -28,15 +28,15 @@ class PerformanceTest:
         }
     
     def clear_cache(self):
-        """Limpiar todo el caché de Redis"""
+        """Limpiar todo el cache de Redis"""
         try:
             cache.master.flushall()
-            print("✅ Caché limpiado")
+            print("Cache limpiado")
         except Exception as e:
-            print(f"❌ Error limpiando caché: {e}")
+            print(f"Error limpiando cache: {e}")
     
     def measure_request_time(self, method, url, **kwargs):
-        """Medir tiempo de respuesta de una petición"""
+        """Medir tiempo de respuesta de una peticion"""
         start_time = time.time()
         try:
             if method.upper() == 'GET':
@@ -46,7 +46,7 @@ class PerformanceTest:
             elif method.upper() == 'PUT':
                 response = requests.put(url, **kwargs)
             else:
-                raise ValueError(f"Método HTTP no soportado: {method}")
+                raise ValueError(f"Metodo HTTP no soportado: {method}")
             
             end_time = time.time()
             response_time = (end_time - start_time) * 1000  # en milisegundos
@@ -67,10 +67,10 @@ class PerformanceTest:
     
     def test_get_cart_performance(self, user_ids, num_requests=50):
         """Probar rendimiento de obtener carritos"""
-        print(f"\n🔍 Probando GET /cart/<user_id> con {num_requests} peticiones...")
+        print(f"\nProbando GET /cart/<user_id> con {num_requests} peticiones...")
         
-        # Test con caché habilitado
-        print("  📊 Con caché habilitado:")
+        # Test con cache habilitado
+        print("  Con cache habilitado:")
         times = []
         for i in range(num_requests):
             user_id = user_ids[i % len(user_ids)]
@@ -80,16 +80,16 @@ class PerformanceTest:
         
         self.results['cache_enabled']['get_cart'] = times
         avg_time = statistics.mean(times) if times else 0
-        print(f"    • Tiempo promedio: {avg_time:.2f}ms")
-        print(f"    • Peticiones exitosas: {len(times)}/{num_requests}")
+        print(f"    Tiempo promedio: {avg_time:.2f}ms")
+        print(f"    Peticiones exitosas: {len(times)}/{num_requests}")
         
-        # Limpiar caché y probar sin caché
+        # Limpiar cache y probar sin cache
         self.clear_cache()
-        print("  📊 Sin caché (primer acceso):")
+        print("  Sin cache (primer acceso):")
         times = []
         for i in range(num_requests):
             user_id = user_ids[i % len(user_ids)]
-            # Limpiar caché antes de cada petición para simular sin caché
+            # Limpiar cache antes de cada peticion para simular sin cache
             cache.delete(f"cart:{user_id}")
             result = self.measure_request_time('GET', f"{self.base_url}/cart/{user_id}")
             if result['success']:
@@ -97,12 +97,12 @@ class PerformanceTest:
         
         self.results['cache_disabled']['get_cart'] = times
         avg_time = statistics.mean(times) if times else 0
-        print(f"    • Tiempo promedio: {avg_time:.2f}ms")
-        print(f"    • Peticiones exitosas: {len(times)}/{num_requests}")
+        print(f"    Tiempo promedio: {avg_time:.2f}ms")
+        print(f"    Peticiones exitosas: {len(times)}/{num_requests}")
     
     def test_add_item_performance(self, user_ids, num_requests=30):
         """Probar rendimiento de agregar items"""
-        print(f"\n➕ Probando POST /cart/<user_id>/add con {num_requests} peticiones...")
+        print(f"\nProbando POST /cart/<user_id>/add con {num_requests} peticiones...")
         
         sample_item = {
             "product_id": 9999,
@@ -111,12 +111,12 @@ class PerformanceTest:
             "quantity": 1
         }
         
-        # Test con caché
-        print("  📊 Con caché habilitado:")
+        # Test con cache
+        print("  Con cache habilitado:")
         times = []
         for i in range(num_requests):
             user_id = user_ids[i % len(user_ids)]
-            sample_item['product_id'] = 9999 + i  # IDs únicos
+            sample_item['product_id'] = 9999 + i  # IDs unicos
             result = self.measure_request_time(
                 'POST', 
                 f"{self.base_url}/cart/{user_id}/add",
@@ -128,15 +128,15 @@ class PerformanceTest:
         
         self.results['cache_enabled']['add_item'] = times
         avg_time = statistics.mean(times) if times else 0
-        print(f"    • Tiempo promedio: {avg_time:.2f}ms")
-        print(f"    • Peticiones exitosas: {len(times)}/{num_requests}")
+        print(f"    Tiempo promedio: {avg_time:.2f}ms")
+        print(f"    Peticiones exitosas: {len(times)}/{num_requests}")
     
     def test_top_products_performance(self, num_requests=20):
         """Probar rendimiento del endpoint de top productos"""
-        print(f"\n🏆 Probando GET /cart/stats/top-products con {num_requests} peticiones...")
+        print(f"\nProbando GET /cart/stats/top-products con {num_requests} peticiones...")
         
-        # Test con caché habilitado
-        print("  📊 Con caché habilitado:")
+        # Test con cache habilitado
+        print("  Con cache habilitado:")
         times = []
         for i in range(num_requests):
             result = self.measure_request_time('GET', f"{self.base_url}/cart/stats/top-products")
@@ -145,15 +145,15 @@ class PerformanceTest:
         
         self.results['cache_enabled']['top_products'] = times
         avg_time = statistics.mean(times) if times else 0
-        print(f"    • Tiempo promedio: {avg_time:.2f}ms")
-        print(f"    • Peticiones exitosas: {len(times)}/{num_requests}")
+        print(f"    Tiempo promedio: {avg_time:.2f}ms")
+        print(f"    Peticiones exitosas: {len(times)}/{num_requests}")
         
-        # Test sin caché
+        # Test sin cache
         cache.delete("top_products")
-        print("  📊 Sin caché:")
+        print("  Sin cache:")
         times = []
         for i in range(num_requests):
-            # Limpiar caché antes de cada petición
+            # Limpiar cache antes de cada peticion
             cache.delete("top_products")
             result = self.measure_request_time('GET', f"{self.base_url}/cart/stats/top-products")
             if result['success']:
@@ -161,12 +161,12 @@ class PerformanceTest:
         
         self.results['cache_disabled']['top_products'] = times
         avg_time = statistics.mean(times) if times else 0
-        print(f"    • Tiempo promedio: {avg_time:.2f}ms")
-        print(f"    • Peticiones exitosas: {len(times)}/{num_requests}")
+        print(f"    Tiempo promedio: {avg_time:.2f}ms")
+        print(f"    Peticiones exitosas: {len(times)}/{num_requests}")
     
     def test_concurrent_requests(self, user_ids, num_threads=10, requests_per_thread=5):
         """Probar rendimiento con peticiones concurrentes"""
-        print(f"\n⚡ Probando peticiones concurrentes: {num_threads} hilos, {requests_per_thread} peticiones/hilo")
+        print(f"\nProbando peticiones concurrentes: {num_threads} hilos, {requests_per_thread} peticiones/hilo")
         
         def make_requests(thread_id):
             times = []
@@ -187,15 +187,15 @@ class PerformanceTest:
         total_time = time.time() - start_time
         avg_time = statistics.mean(all_times) if all_times else 0
         
-        print(f"    • Tiempo total: {total_time:.2f}s")
-        print(f"    • Tiempo promedio por petición: {avg_time:.2f}ms")
-        print(f"    • Peticiones por segundo: {len(all_times)/total_time:.2f}")
-        print(f"    • Peticiones exitosas: {len(all_times)}/{num_threads * requests_per_thread}")
+        print(f"    Tiempo total: {total_time:.2f}s")
+        print(f"    Tiempo promedio por peticion: {avg_time:.2f}ms")
+        print(f"    Peticiones por segundo: {len(all_times)/total_time:.2f}")
+        print(f"    Peticiones exitosas: {len(all_times)}/{num_threads * requests_per_thread}")
     
     def generate_report(self):
         """Generar reporte de rendimiento"""
         print("\n" + "="*70)
-        print("📈 REPORTE DE RENDIMIENTO")
+        print("REPORTE DE RENDIMIENTO")
         print("="*70)
         
         for operation in ['get_cart', 'add_item', 'top_products']:
@@ -209,43 +209,43 @@ class PerformanceTest:
                 avg_without_cache = statistics.mean(cache_disabled)
                 improvement = ((avg_without_cache - avg_with_cache) / avg_without_cache) * 100
                 
-                print(f"\n🔧 {operation.upper()}:")
-                print(f"  Con caché:    {avg_with_cache:.2f}ms (promedio)")
-                print(f"  Sin caché:    {avg_without_cache:.2f}ms (promedio)")
-                print(f"  Mejora:       {improvement:.1f}% más rápido con caché")
-                print(f"  Factor:       {avg_without_cache/avg_with_cache:.1f}x más rápido")
+                print(f"\n{operation.upper()}:")
+                print(f"  Con cache:    {avg_with_cache:.2f}ms (promedio)")
+                print(f"  Sin cache:    {avg_without_cache:.2f}ms (promedio)")
+                print(f"  Mejora:       {improvement:.1f}% mas rapido con cache")
+                print(f"  Factor:       {avg_without_cache/avg_with_cache:.1f}x mas rapido")
         
-        # Estadísticas de Redis
+        # Estadisticas de Redis
         try:
             redis_stats = cache.get_stats()
-            print(f"\n🔄 ESTADÍSTICAS DE REDIS:")
+            print(f"\nESTADISTICAS DE REDIS:")
             print(f"  Master: {redis_stats['master']['status']}")
             if redis_stats['master']['status'] == 'connected':
                 info = redis_stats['master']['info']
-                print(f"    • Clientes conectados: {info.get('connected_clients', 0)}")
-                print(f"    • Memoria utilizada: {info.get('used_memory_human', '0')}")
-                print(f"    • Cache hits: {info.get('keyspace_hits', 0)}")
-                print(f"    • Cache misses: {info.get('keyspace_misses', 0)}")
+                print(f"    Clientes conectados: {info.get('connected_clients', 0)}")
+                print(f"    Memoria utilizada: {info.get('used_memory_human', '0')}")
+                print(f"    Cache hits: {info.get('keyspace_hits', 0)}")
+                print(f"    Cache misses: {info.get('keyspace_misses', 0)}")
             
             print(f"  Slaves: {len([s for s in redis_stats['slaves'] if s.get('status') == 'connected'])} activos")
         except Exception as e:
-            print(f"  ❌ Error obteniendo estadísticas: {e}")
+            print(f"  Error obteniendo estadisticas: {e}")
 
 def main():
-    # Verificar que la API esté disponible
+    # Verificar que la API este disponible
     tester = PerformanceTest()
     
     try:
-        response = requests.get(f"{tester.base_url}/health", timeout=5)
+        response = requests.get(f"{tester.base_url}/cart/health", timeout=5)
         if response.status_code != 200:
-            print("❌ La API no está disponible. Asegúrate de que esté ejecutándose en localhost:5000")
+            print("La API no esta disponible. Asegurate de que este ejecutandose en localhost:5001")
             return
     except requests.exceptions.RequestException:
-        print("❌ No se puede conectar a la API. Asegúrate de que esté ejecutándose en localhost:5000")
+        print("No se puede conectar a la API. Asegurate de que este ejecutandose en localhost:5001")
         return
     
-    print("🚀 Iniciando pruebas de rendimiento...")
-    print("⚠️  Asegúrate de tener datos de prueba cargados (ejecuta seed_data.py primero)")
+    print("Iniciando pruebas de rendimiento...")
+    print("Asegurate de tener datos de prueba cargados (ejecuta seed_data.py primero)")
     
     # Lista de usuarios de prueba
     user_ids = [f"user{i:03d}" for i in range(1, 26)]  # user001 a user025
@@ -259,7 +259,7 @@ def main():
     # Generar reporte final
     tester.generate_report()
     
-    print("\n✅ Pruebas de rendimiento completadas")
+    print("\nPruebas de rendimiento completadas")
 
 if __name__ == '__main__':
     main()
